@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Join Chat</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100 h-screen flex items-center justify-center">
+
+  <div class="w-full  chatpanel hidden max-w-md bg-white shadow-lg rounded-lg overflow-hidden">
+    <!-- Chat Header -->
+    <div id="chat-header" class="bg-blue-600 p-4 text-white text-center font-bold">
+      Chat Room
+    </div>
+    
+    <!-- Messages Container -->
+    <div id="message-box" class="p-4 h-80 overflow-y-scroll">
+      <!-- Messages will be dynamically inserted here -->
+    </div>
+    
+    <!-- Message Input Form -->
+    <form autocomplete="off" id="message-form" class="flex p-4 border-t border-gray-200">
+      <input type="text" id="message-input" placeholder="Type a message..." class="flex-1 p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-600">
+      <button type="submit" class="ml-2 bg-blue-600 text-white p-2 rounded-lg hover:bg-blue-700 transition">
+        Send
+      </button>
+    </form>
+  </div>
+
+  <div class="w-full prechat max-w-sm bg-white shadow-lg rounded-lg overflow-hidden">
+    <!-- Header -->
+    <div class="bg-blue-600 p-4 text-white text-center font-bold">
+      Join the Chat
+    </div>
+    
+      <div class="mb-4">
+        <input type="text" 
+         placeholder="Your Name" class="w-full name p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-600" required>
+         <button class="w-full startchat bg-blue-600 text-white p-2 rounded-lg hover:bg-blue-700 transition">
+          Join Chat
+        </button>
+      </div>
+     
+    
+  </div>
+  <script src="https://cdn.socket.io/4.7.5/socket.io.min.js" integrity="sha384-2huaZvOR9iDzHqslqwpR87isEmrfxqyWOF7hr7BY6KG0+hVKLoEXMPUJw3ynWuhO" crossorigin="anonymous"></script>
+  <script>
+    const name = document.querySelector(".name");
+    const input = document.querySelector("#message-input");
+    const messagebox = document.querySelector("#message-box");
+    
+    let username = null;
+    let socket;
+    
+    document.querySelector(".startchat").addEventListener("click", () => {
+      if (name.value.trim().length > 0) {
+        socket = io();
+        username = name.value.trim();
+        socket.emit("new-user", username);
+        document.querySelector(".prechat").classList.add("hidden");
+        document.querySelector(".chatpanel").classList.remove("hidden");
+    
+        document.querySelector("#message-form").addEventListener("submit", (event) => {
+          event.preventDefault();
+          socket.emit("message", input.value);
+          input.value = "";
+        });
+    
+        socket.on("message", (details) => {
+          
+          if (details.id === socket.id) {
+            messagebox.innerHTML += `<div class="flex justify-end mb-4">
+  <div class="bg-blue-500 text-white p-3 rounded-lg max-w-xs">
+    <p><b>${details.username}</b>: ${details.message}</p>
+  </div>
+</div>`;
+          } else {
+            messagebox.innerHTML += `<div class="flex justify-start mb-4">
+  <div class="bg-gray-300 text-black p-3 rounded-lg max-w-xs">
+    <p><b>${details.username}</b>: ${details.message}</p>
+  </div>
+</div>`;
+          }
+        });
+          
+        
+      }
+    });
+    
+          
+        
+  </script>
+
+
+
+</body>
+</html>
